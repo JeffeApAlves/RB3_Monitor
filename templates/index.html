@@ -1,0 +1,144 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>RB3 Monitor</title>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function() {
+
+            // Uma aplicacao pode abrir uma conexao com varios namespace, e
+            // Socket.IO ira multiplexar todas as conexoes em um unico
+            // canal fisico. Se voce nao tem a preocupacao com varios canais, entao
+            // o namespace pode ser uma string vazia.
+            namespace = '/test';
+
+            // Conecta Socket.IO server.
+            // A URL de conexao tem o formato seguinte:
+            //     http[s]://<domain>:<port>[/<namespace>]
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+
+            // Evento para tratar novas conexoes.
+            // A callback sera invocada quando a conexao estabilizou com o server
+            socket.on('connect', function() {
+                socket.emit('my_event', {data: 'Conectado!'});
+            });
+
+            // Evento pra tratar o envio de dados feito pelo servidor.
+            // A callback sera invocada sempre que o server enviar dados para o client
+            // Os dados serao mostrados na sessao Recepcao
+            socket.on('my_response', function(msg) {
+                $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+            });
+
+            // Evento para tratar o envio de dados da telemetria da RaspBerry
+            // A callback sera invocada quando o server enviar a telemetria
+            // Os dados serao mostrados na sessao de telemetria
+            socket.on('onUpdateTLM', function(msg) {
+ 		$('#temperatura').text(msg.temperatura);
+ 		$('#humidade').text(msg.humidade);
+ 		$('#cpu').text(msg.cpu);
+		$('#memoria').text(msg.memoria);
+		$('#disco').text(msg.disco);
+		$('#pressao').text(msg.pressao);
+		$('#tlm_title').text('Dados Telemetria # (' + msg.count + ' )');
+            });
+
+            // Funcao inicia o teste de latencia enviando o ping e zera o cronometro
+            var ping_pong_times = [];
+            var start_time;
+            window.setInterval(function() {
+                start_time = (new Date).getTime();
+                socket.emit('my_ping');
+            }, 1000);
+
+            // Funcao finaliza o teste de latencia
+            // A funcao sera invocada quando o server enviar o pong. O cronometro e parado e 
+	    // o resultado registrado em uma lista para o calculo da media dos ultimos valores
+            socket.on('my_pong', function() {
+                var latency = (new Date).getTime() - start_time;
+                ping_pong_times.push(latency);
+                ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
+                var sum = 0;
+                for (var i = 0; i < ping_pong_times.length; i++)
+                    sum += ping_pong_times[i];
+                $('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+            });
+
+
+	    // Formulario para envios de menssagens e criacao de salas(grupo)
+
+            $('form#emit').submit(function(event) {
+                socket.emit('my_event', {data: $('#emit_data').val()});
+                return false;
+            });
+            $('form#broadcast').submit(function(event) {
+                socket.emit('my_broadcast_event', {data: $('#emit_data').val()});
+                return false;
+            });
+            $('form#join').submit(function(event) {
+                socket.emit('join', {room: $('#join_room').val()});
+                return false;
+            });
+            $('form#leave').submit(function(event) {
+                socket.emit('leave', {room: $('#leave_room').val()});
+                return false;
+            });
+            $('form#send_room').submit(function(event) {
+                socket.emit('my_room_event', {room: $('#room_name').val(), data: $('#room_data').val()});
+                return false;
+            });
+            $('form#close').submit(function(event) {
+                socket.emit('close_room', {room: $('#close_room').val()});
+                return false;
+            });
+            $('form#disconnect').submit(function(event) {
+                socket.emit('disconnect_request');
+                return false;
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>RB3 Monitor</h1>
+    <h2>Info:</h2>
+    <p>Modo assincrono e: <b>{{ async_mode }}</b></p>
+    <p>Media do tempo de latencia (ping/pong): <b><span id="ping-pong"></span>ms</b></p>
+    <h2 id="tlm_title">Dados telemetria</h2>
+    <p>Tempearatura da CPU: <b><span id="temperatura"></span> [°C]</b></p>
+    <p>CPU: <b><span id="cpu"></span> [%]</b></p>
+    <p>Memoria: <b><span id="memoria"></span> [MB]</b></p>
+    <p>Disco: <b><span id="disco"></span> [GB]</b></p>
+    <p>Humidade: <b><span id="humidade"></span> [%]</b></p>
+    <p>Pressao: <b><span id="pressao"></span> [mbar]</b></p> 
+    <h2>Envios:</h2>
+    <form id="emit" method="POST" action='#'>
+        <input type="text" name="emit_data" id="emit_data" placeholder="Menssagem">
+        <input type="submit" value="Echo">
+	<input type="submit" value="Enviar para todos">
+    </form>
+    <form id="join" method="POST" action='#'>
+        <input type="text" name="join_room" id="join_room" placeholder="Sala">
+        <input type="submit" value="Participar da sala">
+    </form>
+    <form id="leave" method="POST" action='#'>
+        <input type="text" name="leave_room" id="leave_room" placeholder="Sala">
+        <input type="submit" value="Deixar a sala">
+    </form>
+    <form id="send_room" method="POST" action='#'>
+        <input type="text" name="room_name" id="room_name" placeholder="Sala">
+        <input type="text" name="room_data" id="room_data" placeholder="Menssagem">
+        <input type="submit" value="Enviar para a sala">
+    </form>
+    <form id="close" method="POST" action="#">
+        <input type="text" name="close_room" id="close_room" placeholder="Room Name">
+        <input type="submit" value="Fechar sala">
+    </form>
+    <form id="disconnect" method="POST" action="#">
+        <input type="submit" value="Desconectar">
+    </form>
+    <h2>Recepcao:</h2>
+    <div id="log"></div>
+
+</body>
+</html>
