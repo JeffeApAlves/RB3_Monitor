@@ -24,13 +24,11 @@ UPDATE_INTERVAL = 5
 #Porta 
 tPort = 80
 
-
-class RB3Subscribe (Thread):
-
-   
+#class RB3Subscribe (Thread):
+class RB3Subscribe (object):
+    
     def __init__(self):
-
-        Thread.__init__(self)
+        #Thread.__init__(self)
         # Criaca do topico
         #self.topic = "channels/" + channelID + "/publish/" + apiKey
         self.temperature = ''
@@ -39,13 +37,14 @@ class RB3Subscribe (Thread):
         self.disk=''
         self.pressure =''
         self.humidity =''
-        
+        self.ts_channel = None
+
     def init(self):
+        self.ts_channel = thingspeak.Channel(CHANNEL_ID, READ_API_KEY)
         self.client = mqtt.Client()
         self.client.connect(mqttHost,tPort)
         self.client.loop_start()
-
-#        Thread.start(self)
+#        Thread.start()
  
     def getCPUtemperature(self):
         return self.temperature
@@ -66,31 +65,24 @@ class RB3Subscribe (Thread):
         return self.humidity
 
     def readValue(self,id):
-        thing = thingspeak.Channel(CHANNEL_ID, READ_API_KEY)
-        data = json.loads(thing.get_field_last(field=id))
-#        print(data)
+        data = json.loads(self.ts_channel.get_field_last(field=id))
         return data['field'+id]
 
     def readValues(self):
+        
+        data = json.loads(self.ts_channel.get_field_last(field='1'))
+
         self.temperature = self.readValue('1')
         self.disk = self.readValue('2')
         self.cpu = self.readValue('3')
         self.memory = self.readValue('4')
         self.pressure = self.readValue('5')
         self.humidity = self.readValue('6')
-           
         
-    def run(self):
-
-        self.client.loop_start()
-        
-        while(1):
-    
-            self.temperature = self.readValue('1')
-            self.disk = self.readValue('2')
-            self.cpu = self.readValue('3')
-            self.memory = self.readValue('4')
-            self.pressure = self.readValue('5')
-            self.humidity = self.readValue('6')
-          
-            time.sleep(UPDATE_INTERVAL)
+#    def run(self):
+#
+#        self.client.loop_start()
+#        
+#        while(1):
+#            self.readValues()
+#            time.sleep(UPDATE_INTERVAL)
