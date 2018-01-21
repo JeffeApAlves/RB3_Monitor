@@ -6,7 +6,7 @@ import psutil
 from thingspeak_config import thingspeak_config
 #from sense_emu import SenseHat
 
-class RB3Publish (Thread):
+class Publish (Thread):
 
     #sense = SenseHat()
 

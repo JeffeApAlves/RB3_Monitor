@@ -7,7 +7,7 @@ import os
 import json
 from thingspeak_config import thingspeak_config
 
-class RB3Subscribe (object):
+class Subscribe (object):
 
     def __init__(self):
         self._temperature = ''

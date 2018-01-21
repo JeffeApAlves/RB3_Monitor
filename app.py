@@ -1,5 +1,5 @@
-from RB3Publish import RB3Publish
-from RB3Subscribe import RB3Subscribe
+from publish import Publish
+from subscribe import Subscribe
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, emit, join_room, leave_room,close_room, rooms, disconnect
 
@@ -8,8 +8,8 @@ from flask_socketio import SocketIO, emit, join_room, leave_room,close_room, roo
 # the best option based on installed packages.
 async_mode = None
 
-publish = RB3Publish()
-subscribe = RB3Subscribe()
+publish = Publish()
+subscribe = Subscribe()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
