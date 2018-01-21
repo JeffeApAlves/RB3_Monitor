@@ -15,7 +15,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, async_mode=async_mode)
 thread = None
-threadRabbitMQ = None
+#threadRabbitMQ = None
 
 
 def background_thread():
@@ -27,7 +27,7 @@ def background_thread():
     publish.start()
 
     #inicia o consumidor
-    subscribe.init()
+    subscribe.start()
 
     while True:
         count += 1
@@ -41,14 +41,15 @@ def publishAllData(count):
 
     subscribe.readValues()
 
-    info    =  {'temperatura':  str(subscribe.temperature) ,
-                'humidade':  str(subscribe.humidity) ,
-                'memoria': str(subscribe.memory),
-                'disco': str(subscribe.disk),
-                'cpu': str(subscribe.cpu),
-                'pressao': str(subscribe.pressure),
+    info    =  {'temperatura':  subscribe.temperature ,
+                'humidade':  subscribe.humidity ,
+                'memoria': subscribe.memory,
+                'disco': subscribe.disk,
+                'cpu': subscribe.cpu,
+                'pressao': subscribe.pressure,
                 'count':count}
 
+    
     print("Iniciando a leitura do canal no ThingSpeak")
 
     socketio.emit('onUpdateTLM', info, namespace='/test')

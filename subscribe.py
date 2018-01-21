@@ -18,7 +18,7 @@ class Subscribe (object):
         self._humidity =''
         self._ts_channel = None
 
-    def init(self):
+    def start(self):
         self.ts_channel = thingspeak.Channel(thingspeak_config.CHANNEL_ID, thingspeak_config.READ_API_KEY)
 
     @property
