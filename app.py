@@ -1,13 +1,7 @@
-"Fonte de referencia: https://blog.miguelgrinberg.com/post/easy-websockets-with-flask-and-gevent"
-"https://learn.pimoroni.com"
-"http://community.thingspeak.com/tutorials/update-a-thingspeak-channel-using-mqtt-on-a-raspberry-pi"
-"https://www.mathworks.com/help/thingspeak/mqtt-basics.html#zmw57dd0e21035"
-
 from RB3Publish import RB3Publish
 from RB3Subscribe import RB3Subscribe
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, emit, join_room, leave_room,close_room, rooms, disconnect
-from frdm import kl25z
 
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
@@ -16,7 +10,6 @@ async_mode = None
 
 publish = RB3Publish()
 subscribe = RB3Subscribe()
-tracker = kl25z()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -24,16 +17,8 @@ socketio = SocketIO(app, async_mode=async_mode)
 thread = None
 threadRabbitMQ = None
 
-def task_RabbitMQ():    
-    """Thread para inicilizacao do subscribe e publish e envio periodico dos dados de telemetria"""
 
-    tracker.init()
-
-    while True:
-        tracker.publishTLM()
-        socketio.sleep(1) 
-
-def background_thread():    
+def background_thread():
     """Thread para inicilizacao do subscribe e publish e envio periodico dos dados de telemetria"""
 
     count = 0
@@ -42,29 +27,30 @@ def background_thread():
     publish.start()
 
     #inicia o consumidor
-    #subscribe.init()
+    subscribe.init()
 
     while True:
         count += 1
-        #print("Iniciando a leitura do canal no ThingSpeak")
-        #subscribe.readValues()
+        print("Iniciando a leitura do canal no ThingSpeak")
+        subscribe.readValues()
         sendAllDataRB3(count)
-        #print("Leitura do ThingSpeak finalizada e envianda para frontend")
+        print("Leitura do ThingSpeak finalizada e envianda para frontend")
 
         socketio.sleep(1)
 
 def sendAllDataRB3(count):
 
-    socketio.emit('onUpdateTLM',
-                 {'temperatura':  str(subscribe.getCPUtemperature()) ,
-                  'humidade':  str(subscribe.getHumidity()) ,
-                  'memoria': str(subscribe.getMemory()),
-                  'disco': str(subscribe.getDisk()),
-                  'cpu': str(subscribe.getCPU()),
-                  'pressao': str(subscribe.getPressure()),
-                  'count':count},
-                   namespace='/test')    
-    
+    info    =  {'temperatura':  str(subscribe.temperature) ,
+                'humidade':  str(subscribe.humidity) ,
+                'memoria': str(subscribe.memory),
+                'disco': str(subscribe.disk),
+                'cpu': str(subscribe.cpu),
+                'pressao': str(subscribe.pressure),
+                'count':count}
+
+    print(info)
+    socketio.emit('onUpdateTLM', info, namespace='/test')
+
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
@@ -117,11 +103,10 @@ def leave(message):
 @socketio.on('close_room', namespace='/test')
 def close(message):
     session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response', {'data': 'Room ' + message['room'] + ' is closing.',        
+    emit('my_response', {'data': 'Room ' + message['room'] + ' is closing.',
                          'count': session['receive_count']},
          room=message['room'])
     close_room(message['room'])
-
 
 @socketio.on('my_room_event', namespace='/test')
 def send_room_message(message):
@@ -129,7 +114,6 @@ def send_room_message(message):
     emit('my_response',
          {'data': message['data'], 'count': session['receive_count']},
          room=message['room'])
-
 
 @socketio.on('disconnect_request', namespace='/test')
 def disconnect_request():
@@ -146,10 +130,10 @@ def ping_pong():
 def test_connect():
     emit('my_response', {'data': 'Connected', 'count': 0})
 
-    global threadRabbitMQ 
-    if threadRabbitMQ  is None:
-        threadRabbitMQ  = socketio.start_background_task(target=task_RabbitMQ)
-    print("Thread RabbitMQ iniciada !")
+#    global threadRabbitMQ
+#    if threadRabbitMQ  is None:
+#        threadRabbitMQ  = socketio.start_background_task(target=task_RabbitMQ)
+#    print("Thread RabbitMQ iniciada !")
 
     global thread
     if thread is None:
@@ -161,7 +145,7 @@ def test_disconnect():
     print('Client disconnected', request.sid)
 
 @app.route('/pressao')
-def pressao():    
+def pressao():
     return str(subscribe.getPressure()) + ' %'
 
 @app.route('/humidade')
@@ -171,7 +155,7 @@ def humidade():
 @app.route('/temperatura')
 def tempearature():
     return str(subscribe.getCPUtemperature()) + ' Celsus'
-    
+
 @app.route('/cpu')
 def cpu():
     return str(subscribe.getCPU()) + ' %'
@@ -191,4 +175,3 @@ if __name__ == '__main__':
         port=5000
     )
     socketio.run(app, debug=True)
-

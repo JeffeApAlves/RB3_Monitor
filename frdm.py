@@ -18,9 +18,9 @@ class kl25z (object):
     def __init__(self):
         print("Iniciando conexão com o message broker...")
         #self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=HOST))
-        self.connection = pika.BlockingConnection(parameters=RabbitMQConfig.getConnectionParameters())    
+        self.connection = pika.BlockingConnection(parameters=RabbitMQConfig.getConnectionParameters())
         self.channel    = self.connection.channel()
- 
+
     def init(self):
         print("Criando Exchanges")
         self.createExchanges()
@@ -28,7 +28,7 @@ class kl25z (object):
         self.createQueues()
         print("Criando Binds")
         self.createBinds()
-        
+
     def createExchanges(self):
         self.channel.exchange_declare(exchange=EXCHANGE_TLM,exchange_type='direct')
 
@@ -61,7 +61,7 @@ class kl25z (object):
                                         randint(800,830),
                                         1,
                                         time.time())
-        
+
         header = FRAME_HEADER.format(2,1,time.time(),"AN","TLM",len(payload))
         print("Frame: "+header + payload)
         return header + payload

@@ -2,13 +2,13 @@ from __future__ import print_function
 from threading import Thread
 import paho.mqtt.publish as publish
 import os
-from sense_emu import SenseHat
 import psutil
+#from sense_emu import SenseHat
 
 # ID do canal do ThingSpeak
 channelID = "315831"
 
-# Chave de escrita da API para o canal
+# Chave de escrita da API para o canal (ver no site thingspeak)
 apiKey = "IXKST4CB6ZSZP1FA"
 
 #Host
@@ -17,23 +17,23 @@ mqttHost = "mqtt.thingspeak.com"
 #Camada Transporte
 tTransport = "websockets"
 
-#Porta 
+#Porta
 tPort = 80
 
 
 class RB3Publish (Thread):
 
-    sense = SenseHat()
-   
+    #sense = SenseHat()
+
     def __init__(self):
 
         Thread.__init__(self)
         # Criaca do topico
         self.topic = "channels/" + channelID + "/publish/" + apiKey
-        
+
 
     def getCPUtemperature(self):
-        res = os.popen('vcgencmd measure_temp').readline()
+        res = os.popen('sudo vcgencmd measure_temp').readline()
         return(res.replace("temp=","").replace("'C\n",""))
 
     def getCPU(self):
@@ -50,23 +50,25 @@ class RB3Publish (Thread):
         return total
 
     def getPressure(self):
-        return self.sense.pressure
+        return 0
+	#return self.sense.pressure
 
     def getHumidity(self):
-        return self.sense.humidity
-        
+        return 0
+	#return self.sense.humidity
+
     def run(self):
-        
+
         while(1):
-    
+
             #Coleta estatisiticas do sistema
             cpu = self.getCPU()
-            ram = self.getMemory()            
+            ram = self.getMemory()
             disk = self.getDisk()
             temperature = self.getCPUtemperature()
             pressure = self.getPressure()
             humidity = self.getHumidity()
-            
+
             #Constroi o payload
             payload = "field1=" + temperature + "&field2=" + str(disk) + "&field3=" + str(cpu) + "&field4=" + str(ram) + "&field5=" + str(pressure) + "&field6=" + str(humidity)
 

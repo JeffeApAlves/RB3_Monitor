@@ -1,6 +1,5 @@
 from __future__ import print_function
 from threading import Thread
-import paho.mqtt.client as mqtt
 import time
 import thingspeak
 from ast import literal_eval
@@ -19,58 +18,76 @@ mqttHost = "mqtt.thingspeak.com"
 #Camada Transporte
 tTransport = "websockets"
 
-UPDATE_INTERVAL = 5
-
-#Porta 
+#Porta
 tPort = 80
 
-#class RB3Subscribe (Thread):
 class RB3Subscribe (object):
-    
+
     def __init__(self):
-        #Thread.__init__(self)
-        # Criaca do topico
-        #self.topic = "channels/" + channelID + "/publish/" + apiKey
-        self.temperature = ''
-        self.cpu =''
-        self.memory =''
-        self.disk=''
-        self.pressure =''
-        self.humidity =''
-        self.ts_channel = None
+        self._temperature = ''
+        self._cpu =''
+        self._memory =''
+        self._disk=''
+        self._pressure =''
+        self._humidity =''
+        self._ts_channel = None
 
     def init(self):
         self.ts_channel = thingspeak.Channel(CHANNEL_ID, READ_API_KEY)
-        self.client = mqtt.Client()
-        self.client.connect(mqttHost,tPort)
-        self.client.loop_start()
-#        Thread.start()
- 
-    def getCPUtemperature(self):
-        return self.temperature
-  
-    def getCPU(self):
-        return self.cpu
 
-    def getMemory(self):
-        return self.memory
+    @property
+    def temperature(self):
+        return self._temperature
 
-    def getDisk(self):
-         return self.disk
+    @temperature.setter
+    def temperature(self,value):
+        self._temperature = value
 
-    def getPressure(self):
-        return self.pressure
+    @property
+    def cpu(self):
+        return self._cpu
 
-    def getHumidity(self):
-        return self.humidity
+    @cpu.setter
+    def cpu(self,value):
+        self._cpu = value
+
+    @property
+    def memory(self):
+        return self._memory
+
+    @memory.setter
+    def memory(self,value):
+        self._memory = value
+
+    @property
+    def disk(self):
+        return self._disk
+
+    @disk.setter
+    def disk(self,value):
+        self._disk = value
+
+    @property
+    def pressure(self):
+        return self._pressure
+
+    @pressure.setter
+    def pressure(self,value):
+        self._pressure = value
+
+    @property
+    def humidity(self):
+        return self._humidity
+
+    @humidity.setter
+    def humidity(self,value):
+        self._humidity = value
 
     def readValue(self,id):
         data = json.loads(self.ts_channel.get_field_last(field=id))
         return data['field'+id]
 
     def readValues(self):
-        
-        data = json.loads(self.ts_channel.get_field_last(field='1'))
 
         self.temperature = self.readValue('1')
         self.disk = self.readValue('2')
@@ -78,11 +95,3 @@ class RB3Subscribe (object):
         self.memory = self.readValue('4')
         self.pressure = self.readValue('5')
         self.humidity = self.readValue('6')
-        
-#    def run(self):
-#
-#        self.client.loop_start()
-#        
-#        while(1):
-#            self.readValues()
-#            time.sleep(UPDATE_INTERVAL)
