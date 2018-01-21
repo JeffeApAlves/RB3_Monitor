@@ -3,23 +3,9 @@ from threading import Thread
 import paho.mqtt.publish as publish
 import os
 import psutil
+from thingspeak_config import thingspeak_config
+
 #from sense_emu import SenseHat
-
-# ID do canal do ThingSpeak
-channelID = "315831"
-
-# Chave de escrita da API para o canal (ver no site thingspeak)
-apiKey = "IXKST4CB6ZSZP1FA"
-
-#Host
-mqttHost = "mqtt.thingspeak.com"
-
-#Camada Transporte
-tTransport = "websockets"
-
-#Porta
-tPort = 80
-
 
 class RB3Publish (Thread):
 
@@ -29,7 +15,7 @@ class RB3Publish (Thread):
 
         Thread.__init__(self)
         # Criaca do topico
-        self.topic = "channels/" + channelID + "/publish/" + apiKey
+        self.topic = "channels/" + thingspeak_config.CHANNEL_ID + "/publish/" + thingspeak_config.APIKEY
 
 
     def getCPUtemperature(self):
@@ -74,7 +60,7 @@ class RB3Publish (Thread):
 
             # Tenta publicar 
             try:
-                publish.single(self.topic, payload, hostname=mqttHost, transport=tTransport, port=tPort)
+                publish.single(self.topic, payload, hostname=thingspeak_config.mqttHost, transport=thingspeak_config.tTransport, port=thingspeak_config.tPort)
                 print ("Publiacado no ThingSpeak=" + payload)
 
             except (KeyboardInterrupt):

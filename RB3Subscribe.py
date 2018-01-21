@@ -5,21 +5,7 @@ import thingspeak
 from ast import literal_eval
 import os
 import json
-
-# ID do canal do ThingSpeak
-CHANNEL_ID = "315831"
-
-# Chave de escrita da API para o canal
-READ_API_KEY = "TF63H3V6I2UWO954"
-
-#Host
-mqttHost = "mqtt.thingspeak.com"
-
-#Camada Transporte
-tTransport = "websockets"
-
-#Porta
-tPort = 80
+from thingspeak_config import thingspeak_config
 
 class RB3Subscribe (object):
 
@@ -33,7 +19,7 @@ class RB3Subscribe (object):
         self._ts_channel = None
 
     def init(self):
-        self.ts_channel = thingspeak.Channel(CHANNEL_ID, READ_API_KEY)
+        self.ts_channel = thingspeak.Channel(thingspeak_config.CHANNEL_ID, thingspeak_config.READ_API_KEY)
 
     @property
     def temperature(self):
