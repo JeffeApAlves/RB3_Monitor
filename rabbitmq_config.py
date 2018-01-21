@@ -6,7 +6,7 @@ Created on Fri May 12 08:31:16 2017
 
 import pika
 
-class RabbitMQConfig(object):
+class rabbitmq_config(object):
     
   
     HOST = "localhost"
