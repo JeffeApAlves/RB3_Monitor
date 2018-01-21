@@ -12,10 +12,10 @@
 
 Publica mensagens com a telemetria da raspberry(Consumo de CPU,Memoria etc) na plataforma iot ThingSpeak o frontend é atualizado atrves de socket. Foi utilizado o framework Flask. 
 
-![Tela Thing Speak] (images/thingspeak.png)
+![Tela Thing Speak](images/thingspeak.png)
 
 
-![web page] (images/web_page.png)
+![web page](images/web_page.png)
 
 
 ## Instalação
