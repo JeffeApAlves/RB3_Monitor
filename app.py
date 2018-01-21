@@ -19,7 +19,7 @@ threadRabbitMQ = None
 
 
 def background_thread():
-    """Thread para inicilizacao do subscribe e publish e envio periodico dos dados de telemetria"""
+    '''Thread para inicilizacao do subscribe e publish e envio periodico dos dados de telemetria'''
 
     count = 0
 
@@ -31,14 +31,15 @@ def background_thread():
 
     while True:
         count += 1
-        print("Iniciando a leitura do canal no ThingSpeak")
-        subscribe.readValues()
-        sendAllDataRB3(count)
-        print("Leitura do ThingSpeak finalizada e envianda para frontend")
 
-        socketio.sleep(1)
+        publishAllData(count)
 
-def sendAllDataRB3(count):
+        socketio.sleep(5)
+
+def publishAllData(count):
+    '''Publica todas as informações no thinkspea'''
+
+    subscribe.readValues()
 
     info    =  {'temperatura':  str(subscribe.temperature) ,
                 'humidade':  str(subscribe.humidity) ,
@@ -48,8 +49,11 @@ def sendAllDataRB3(count):
                 'pressao': str(subscribe.pressure),
                 'count':count}
 
-    print(info)
+    print("Iniciando a leitura do canal no ThingSpeak")
+
     socketio.emit('onUpdateTLM', info, namespace='/test')
+
+    print("Leitura do ThingSpeak finalizada e envianda para frontend")
 
 def shutdown_server():
     func = request.environ.get('werkzeug.server.shutdown')
