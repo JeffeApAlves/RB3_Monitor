@@ -2,11 +2,11 @@
 
 Publica mensagens com a telemetria da raspberry(Consumo de CPU,Memoria etc) na plataforma iot ThingSpeak o frontend é atualizado atrves de socket. Foi utilizado o framework Flask. 
 
-![Thing Speak](images/thingspeak.png)
+![Thing Speak][thingspeak]
 
 Abaixo segue a tela sendo atualizada via socket 
 
-![web page](images/web_page.png)
+![web page][home_page]
 
 
 ## Instalação
@@ -16,10 +16,17 @@ Abaixo segue a tela sendo atualizada via socket
 2. Instalar dependênncias 
 
 
-## Referencias
+## Referências
 
-[Tutorial raspberry as webserver](https://projects.raspberrypi.org/en/projects/python-web-server-with-flask/10)
+[Websocket with Flask] [ref_flask]
 
-[Introdução MQTT ](https://www.mathworks.com/help/thingspeak/mqtt-basics.html#zmw57dd0e21035)
+[Tutorial raspberry as webserver][ref_rb]
 
-[websocket with Flask](https://blog.miguelgrinberg.com/post/easy-websockets-with-flask-and-gevent)
+[Introdução MQTT ][ref_mqtt]
+
+
+[thingspeak]:images/thingspeak.png
+[home_page]:images/web_page.png
+[ref_flask]: https://blog.miguelgrinberg.com/post/easy-websockets-with-flask-and-gevent
+[ref_mqtt]:https://www.mathworks.com/help/thingspeak/mqtt-basics.html#zmw57dd0e21035
+[ref_rb]:https://projects.raspberrypi.org/en/projects/python-web-server-with-flask/10
